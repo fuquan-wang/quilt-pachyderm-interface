@@ -5,8 +5,7 @@ GCP_ZONE=us-west1-b
 gcloud config set compute/zone ${GCP_ZONE}
 gcloud config set container/cluster ${CLUSTER_NAME}
 
-# By default this spins up a 3-node cluster. You can change the default with `--num-nodes VAL`
-gcloud container clusters create ${CLUSTER_NAME} --scopes storage-rw
+gcloud container clusters create ${CLUSTER_NAME} --scopes storage-rw --num-nodes=3 --enable-autoscaling --min-nodes=2 --max-nodes=50
 gcloud container clusters get-credentials ${CLUSTER_NAME}
 
 kubectl get all
