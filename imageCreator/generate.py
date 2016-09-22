@@ -33,6 +33,14 @@ def get_parser():
 		type=str,
 		default=str(uuid.uuid4()),
 		help='The desired docker image name, a UUID will be used as default')
+	parser.add_argument('--use_uuid_filename',
+		type=int,
+		default=0,
+		help='Use UUID as the output file name, otherwise use the same name as input file (default)')
+	parser.add_argument('--parallelism',
+		type=int,
+		default=1,
+		help='The number of workers, default is 1')
 	return parser
 
 def gen_Dockerfile( args ):
@@ -83,11 +91,15 @@ def gen_pachyRun( args ):
 	if not os.path.exists( output_dir ):
 		os.makedirs( output_dir )
 	script_name = args.script_name
+	use_uuid_filename = args.use_uuid_filename
 	f = open(output_dir+'/pachyRun.sh', 'w')
 	f.write('#!/bin/bash\n\n')
 	f.write('if [ $# != 1 ];\nthen\n\techo "Usage: $0 <INPUTREPO>";\n\texit;\nfi\n\n')
 	f.write('INPUTREPO=$1\n\n')
-	f.write('for file in `ls /pfs/$INPUTREPO/*`; do\n\tsh '+script_name+' $file /pfs/out/`uuidgen`;\ndone\n')
+	if use_uuid_filename!=0:
+		f.write('for file in `ls /pfs/$INPUTREPO/*`; do\n\techo "processing file $file";\n\tsh '+script_name+' $file /pfs/out/`uuidgen`;\ndone\n')
+	else:
+		f.write('for file in `ls /pfs/$INPUTREPO/*`; do\n\techo "processing file $file";\n\tsh '+script_name+' $file /pfs/out/`basename $file`;\ndone\n')
 	f.close()
 
 def gen_pipeline( args ):
@@ -98,11 +110,12 @@ def gen_pipeline( args ):
 	pipeline = args.pipeline
 	docker_user = args.docker_user
 	docker_image = args.docker_image
+	parallelism = args.parallelism
 	f = open(output_dir+'/pipeline.json', 'w')
 	f.write('{\n')
 	f.write('\t"pipeline": {\n\t\t"name": "'+pipeline+'"\n\t},\n')
 	f.write('\t"transform": {\n\t\t"cmd": [ "sh" ],\n\t\t"stdin": [\n\t\t\t"/pachyRun.sh '+input_repo+'"\n\t\t],\n\t\t"image": "'+docker_user+'/'+docker_image+':latest"\n\t},\n')
-	f.write('\t"parallelism": "1",\n')
+	f.write('\t"parallelism": "'+str(parallelism)+'",\n')
 	f.write('\t"inputs": [\n\t\t{\n\t\t\t"repo": {\n\t\t\t\t"name": "'+input_repo+'"\n\t\t\t}\n\t\t}\n\t]\n')
 	f.write('}\n')
 	f.close()
