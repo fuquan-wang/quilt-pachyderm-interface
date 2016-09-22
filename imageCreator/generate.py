@@ -96,10 +96,11 @@ def gen_pachyRun( args ):
 	f.write('#!/bin/bash\n\n')
 	f.write('if [ $# != 1 ];\nthen\n\techo "Usage: $0 <INPUTREPO>";\n\texit;\nfi\n\n')
 	f.write('INPUTREPO=$1\n\n')
+	f.write('for file in `ls /pfs/$INPUTREPO/*`; do\n\techo "processing file $file";\n\tcp $file tmpInput;\n\t[ -f tmpOutput ] && rm -f tmpOutput;\n\tsh '+script_name+' tmpInput tmpOutput;\n')
 	if use_uuid_filename!=0:
-		f.write('for file in `ls /pfs/$INPUTREPO/*`; do\n\techo "processing file $file";\n\tsh '+script_name+' $file /pfs/out/`uuidgen`;\ndone\n')
+		f.write('\tcp tmpOutput /pfs/out/`uuidgen`;\ndone\n')
 	else:
-		f.write('for file in `ls /pfs/$INPUTREPO/*`; do\n\techo "processing file $file";\n\tsh '+script_name+' $file /pfs/out/`basename $file`;\ndone\n')
+		f.write('\tcp tmpOutput /pfs/out/`basename $file`;\ndone\n')
 	f.close()
 
 def gen_pipeline( args ):
