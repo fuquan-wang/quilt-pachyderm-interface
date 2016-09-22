@@ -8,18 +8,23 @@ def get_parser():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--output_dir',
 		type=str,
+		required=True,
 		help='The file output directory')
 	parser.add_argument('--req_file',
 		type=str,
+		required=True,
 		help='The requirements.txt file for `pip install -r`')
 	parser.add_argument('--tar_ball',
 		type=str,
+		required=True,
 		help='The tar ball file containing the executable and the dependent files')
 	parser.add_argument('--script_name',
 		type=str,
+		required=True,
 		help='The name of the executable')
 	parser.add_argument('--input_repo',
 		type=str,
+		required=True,
 		help='The name of the input repo')
 	parser.add_argument('--docker_user',
 		type=str,
@@ -75,7 +80,7 @@ def gen_Dockerfile( args ):
 		sys.exit(0)
 
 	f = open(output_dir+'/Dockerfile', 'w')
-	f.write('FROM leechengchao/job-shim:latest\n\n')
+	f.write('FROM fuquanwang/pach-job-shim:latest\n\n')
 	f.write('# UPDATE reop\nRUN apt-get update\n\n')
 	call(['cp',req_file,output_dir+'/requirements.txt'])
 	f.write('# ADD pip package list\nADD requirements.txt /\n\n')
