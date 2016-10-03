@@ -20,8 +20,8 @@ class Compute(object):
 		self._nlines = '100000000'
 		self._input_repo = ''
 		if( req_file=='' ):
-			dir_path = os.path.dirname(os.path.realpath(__file__))
-			req_file = dir_pach+'/../txt-templ/requirements.txt'
+			dir_path = os.getenv('QUILT_COMPUTE_DIR',os.path.dirname(os.path.realpath(__file__))+'/..')
+			req_file = dir_pach+'/txt-templ/requirements.txt'
 		self._req_file = req_file
 		self._mrmethod = mrmethod 
 
@@ -45,37 +45,37 @@ class Compute(object):
 		subprocess.call(['rm','-f',filename])
 
 	def gen_pipeline_split(self):
-		dir_path = os.path.dirname(os.path.realpath(__file__))
+		dir_path = os.getenv('QUILT_COMPUTE_DIR',os.path.dirname(os.path.realpath(__file__))+'/..')
 		nfiles_per_job = 4
 		self._split_pipeline = 'SPLIT_'+self._input_repo
-		subprocess.call(['bash', dir_path+'/../bash-templ/bugfixer-1.2.0.sh',
+		subprocess.call(['bash', dir_path+'/bash-templ/bugfixer-1.2.0.sh',
 				'--input_repo', self._input_repo,
 				'--output_repo', self._split_pipeline,
 				'--output_file', self._output_dir+'/split.json',
 				'--nlines', str(int(self._nlines)/self._parallelism/nfiles_per_job+1),
 				'--splitter'])
 		subprocess.call(['pachctl', 'create-pipeline', '-f', self._output_dir+'/split.json'])
-		subprocess.call(['bash', dir_path+'/../bash-templ/monitor.sh',
+		subprocess.call(['bash', dir_path+'/bash-templ/monitor.sh',
 				'--pipeline_name', self._split_pipeline,
 				'--wait_span', '60',
 				'--wait_interval', '2'])
 	
 	def gen_pipeline_merge(self, proc_pipeline):
-		dir_path = os.path.dirname(os.path.realpath(__file__))
+		dir_path = os.getenv('QUILT_COMPUTE_DIR',os.path.dirname(os.path.realpath(__file__))+'/..')
 		self._merge_pipeline = 'MERGE_'+self._input_repo
-		subprocess.call(['bash', dir_path+'/../bash-templ/bugfixer-1.2.0.sh',
+		subprocess.call(['bash', dir_path+'/bash-templ/bugfixer-1.2.0.sh',
 				'--input_repo', proc_pipeline,
 				'--output_repo', self._merge_pipeline,
 				'--output_file', self._output_dir+'/merge.json',
 				'--merger'])
 		subprocess.call(['pachctl', 'create-pipeline', '-f', self._output_dir+'/merge.json'])
-		subprocess.call(['bash', dir_path+'/../bash-templ/monitor.sh',
+		subprocess.call(['bash', dir_path+'/bash-templ/monitor.sh',
 				'--pipeline_name', self._merge_pipeline,
 				'--wait_span', '60',
 				'--wait_interval', '2'])
 	
 	def gen_docker_image(self):
-		dir_path = os.path.dirname(os.path.realpath(__file__))
+		dir_path = os.getenv('QUILT_COMPUTE_DIR',os.path.dirname(os.path.realpath(__file__))+'/..')
 
 		if not os.path.isfile( self._req_file ) :
 			print 'The pip requirement file <' + self._req_file + '> does not exist! Exitting'
@@ -102,22 +102,22 @@ class Compute(object):
 			print 'There are less than 1 top directory in tar ball file <' + self._tar_ball + '>. Exitting'
 			sys.exit(0)
 
-		subprocess.call(['bash', dir_path+'/../bash-templ/docker.sh',
+		subprocess.call(['bash', dir_path+'/bash-templ/docker.sh',
 				'--tar_ball', self._tar_ball,
 				'--script', self._script_name,
 				'--workdir', dir_name,
 				'--output_file', self._output_dir+'/Dockerfile'])
 		subprocess.call(['cp',self._req_file,self._output_dir+'/requirements.txt'])
 		subprocess.call(['cp',self._tar_ball,self._output_dir])
-		subprocess.call(['cp',dir_path+'/../bash-templ/pachyRun.sh',self._output_dir])
+		subprocess.call(['cp',dir_path+'/bash-templ/pachyRun.sh',self._output_dir])
 		subprocess.call(['docker','build','-t',self._docker_image,self._output_dir])
 		subprocess.call(['docker','tag',self._docker_image,self._docker_user+'/'+self._docker_image])
 		subprocess.call(['docker','push',self._docker_user+'/'+self._docker_image])
 
 	def gen_pipeline_map(self,input_repo):
-		dir_path = os.path.dirname(os.path.realpath(__file__))
+		dir_path = os.getenv('QUILT_COMPUTE_DIR',os.path.dirname(os.path.realpath(__file__))+'/..')
 		self._proc_pipeline = 'PROC_'+self._input_repo
-		subprocess.call(['bash', dir_path+'/../bash-templ/map.sh',
+		subprocess.call(['bash', dir_path+'/bash-templ/map.sh',
 				'--input_repo', input_repo,
 				'--output_file', self._output_dir+'/proc.json',
 				'--parallelism', str(self._parallelism),
@@ -125,7 +125,7 @@ class Compute(object):
 				'--docker_image', self._docker_image,
 				'--pipeline_name', self._proc_pipeline])
 		subprocess.call(['pachctl', 'create-pipeline', '-f', self._output_dir+'/proc.json'])
-		subprocess.call(['bash', dir_path+'/../bash-templ/monitor.sh',
+		subprocess.call(['bash', dir_path+'/bash-templ/monitor.sh',
 				'--pipeline_name', self._proc_pipeline,
 				'--wait_span', '1000'])
 	
