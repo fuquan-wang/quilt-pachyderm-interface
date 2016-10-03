@@ -43,6 +43,8 @@ The API is designed the as the picture below. On the user side, he/she can direc
 - Generate the pipeline manifest, including the MapReduce patterns, pallelism and inputs/outputs
 - Submit the job to Pachyderm cloud, monitor the job status, download the output and upload back to Quilt immediately after the job finishes
 
+![API design](img/API.png)
+
 ## Docker image preparation
 
 [Back to Table of Contents] (README.md#table-of-contents)
