@@ -58,6 +58,8 @@ Starting from the base image, we will add the following elements to make it the 
 - The user script(s) and dependent file(s). Currently we take an input file(s) in a directory and zipped in the format of `.tar` or `.tar.gz`. We encourage the user to finish this step by hand, but we plan to make this easier. We also suggest the user to make the main script read the full table as on Quilt server and write to a desired file.
 - The helper scripts. This helps the user to finish multiple processings though the user script(s) only need to run locally on one file. In addition, other scripts are also provided in case user needed. For example, the test case (rule set 2 RNA scoring) gives only a script with inputs of a string (one column in the table) and output to stdout, so a helper script with sending required strings to the user script and writing to a file is added. However, this is not automatically done yet.
 
+![Docker image preparation](img/image-building.png)
+
 ## Pipeline generation
 
 [Back to Table of Contents] (README.md#table-of-contents)
@@ -68,6 +70,8 @@ The Pachyderm JSON manifest will be automatically generated, specifying input re
 - Block partition is splitting the files into very uneven pieces
 Therefore a workaround is included in this project. The files will be splitted according to the parallelism using an automatic pipeline, then submitted the processing jobs to Pachyderm, where it will not apply splittings any more. Afterwards, the output will be merged into a single file. This bug fix is user transparent.
 
+![Pipeline generation](img/pipeline-building.png)
+
 ## Test case
 
 [Back to Table of Contents] (README.md#table-of-contents)
@@ -75,6 +79,8 @@ Therefore a workaround is included in this project. The files will be splitted a
 This interface is tested with calculating the rule set 2 scores on human RNA. The input table can be found on [QuiltData](https://quiltdata.com/app/table/2059) with 12 million rows. The processing scripts can be found at [Board Institute](http://portals.broadinstitute.org/gpp/public/dir/download?dirpath=software&filename=Rule_Set_2_scoring_v1.2.tar.gz).
 
 Processing the table with one single process (Intel Xenon @ 2.2 GHz) will take 100 days. With this interface, it is trivial to process it in the parallel way with an arbitrary number of parallelism. As shown on the chart below, it does not make more than 1 API call to make it 100 times faster.
+
+![Test case](img/test-case.png)
 
 ## Implmentation for Quilt
 
