@@ -6,7 +6,7 @@ This document serves two purposes:
 - Describe my project to general audience
 - Describe the technical usage and implementation to QuiltData
 
-# Tabel of contents
+# Table of contents
 
 1. [QuiltData](README.md#quiltdata)
 2. [Pachyderm intro and deployments](README.md#pachyderm-intro-and-deployments)
@@ -14,7 +14,7 @@ This document serves two purposes:
 4. [Docker image preparation](README.md#docker-image-preparation)
 5. [Pipeline generation](README.md#pipeline-generation)
 6. [Test case](README.md#test-case)
-7. [Implmentation for Quilt](README.md#implementation-for-quilt)
+7. [Implementation for Quilt](README.md#implementation-for-quilt)
 8. [Future developments](README.md#future-developments)
 
 ## QuiltData
@@ -82,7 +82,7 @@ Processing the table with one single process (Intel Xenon @ 2.2 GHz) will take 1
 
 ![Test case](img/test-case.png)
 
-## Implmentation for Quilt
+## Implementation for Quilt
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
