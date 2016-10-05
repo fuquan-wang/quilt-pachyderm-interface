@@ -1,7 +1,7 @@
 FROM leechengchao/job-shim:latest
 
 # UPDATE reop
-apt-get update
+RUN apt-get update
 
 # ADD pip package list
 ADD requirements.txt /
