@@ -2,7 +2,7 @@
 
 function usage
 {
-	    echo -e "\nusage: $0 --input_repo INPUT_REPO [ [--number_of_tops] | [--help | -h] ]\n"
+	    echo -e "\nusage: $0 --input_repo INPUT_REPO [ [--number_of_tops TOPS] | [--help | -h] ]\n"
 }
 
 #### Main
