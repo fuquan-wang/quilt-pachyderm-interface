@@ -6,8 +6,9 @@ import time
 import tarfile
 
 class Compute(object):
-	def __init__(self, tar_ball, script_name, table_number, output_dir='/tmp/'+str(uuid.uuid4()), 
-	docker_user='fuquanwang', docker_image=str(uuid.uuid4()), parallelism=4, mrmethod='simple_map', req_file=''):
+	def __init__(self, table_number, tar_ball='', script_name='', output_dir='/tmp/'+str(uuid.uuid4()), 
+	docker_user='fuquanwang', docker_image=str(uuid.uuid4()), parallelism=4, mrmethod='simple_map', req_file='',
+	column_for_count=0, score_colunm='', ntops=10, ignore_case=False, score_is_integer=False):
 		if not os.path.exists( output_dir ):
 			os.makedirs( output_dir )
 		self._output_dir = output_dir
@@ -21,9 +22,14 @@ class Compute(object):
 		self._input_repo = ''
 		if( req_file=='' ):
 			dir_path = os.getenv('QUILT_COMPUTE_DIR',os.path.dirname(os.path.realpath(__file__))+'/..')
-			req_file = dir_pach+'/txt-templ/requirements.txt'
+			req_file = dir_path+'/txt-templ/requirements.txt'
 		self._req_file = req_file
 		self._mrmethod = mrmethod 
+		self._column_for_count = column_for_count
+		self._score_colunm = score_colunm
+		self._ntops = ntops
+		self._ignore_case = ignore_case
+		self._score_is_integer = score_is_integer
 
 		p = subprocess.Popen('pachctl version |grep pachctl |awk \'{print $2}\' |cut -f 1 -d\\-', stdout=subprocess.PIPE, shell=True)
 		(self._pachy_version, err) = p.communicate()
@@ -129,6 +135,49 @@ class Compute(object):
 				'--pipeline_name', self._proc_pipeline,
 				'--wait_span', '1000'])
 	
+	def gen_pipeline_count(self,input_repo):
+		dir_path = os.getenv('QUILT_COMPUTE_DIR',os.path.dirname(os.path.realpath(__file__))+'/..')
+		self._count_step1_pipeline = 'COUNT_STEP1_'+self._input_repo
+		self._count_pipeline = 'COUNT_'+self._input_repo
+		if self._score_colunm == '':
+			subprocess.call(['bash', dir_path+'/bash-templ/count.sh',
+					'--input_repo', input_repo,
+					'--output_file', self._output_dir+'/count.json',
+					'--parallelism', str(self._parallelism),
+					'--column_number', str(self._column_for_count),
+					'--to_lower', str(int(self._ignore_case)),
+					'--integer_score', str(int(self._score_is_integer)),
+					'--column_number', str(self._column_for_count)])
+		else: 
+			subprocess.call(['bash', dir_path+'/bash-templ/count.sh',
+					'--input_repo', input_repo,
+					'--output_file', self._output_dir+'/count.json',
+					'--parallelism', str(self._parallelism),
+					'--column_number', str(self._column_for_count),
+					'--to_lower', str(int(self._ignore_case)),
+					'--integer_score', str(int(self._score_is_integer)),
+					'--column_number', str(self._column_for_count),
+					'--score_column', str(self._score_colunm)])
+		subprocess.call(['pachctl', 'create-pipeline', '-f', self._output_dir+'/count.json'])
+		subprocess.call(['bash', dir_path+'/bash-templ/monitor.sh',
+				'--pipeline_name', self._count_step1_pipeline,
+				'--wait_span', '100'])
+		subprocess.call(['bash', dir_path+'/bash-templ/monitor.sh',
+				'--pipeline_name', self._count_pipeline,
+				'--wait_span', '100'])
+	
+	def gen_pipeline_topk(self,input_repo):
+		dir_path = os.getenv('QUILT_COMPUTE_DIR',os.path.dirname(os.path.realpath(__file__))+'/..')
+		self._topk_pipeline = 'TOPK_'+self._input_repo
+		subprocess.call(['bash', dir_path+'/bash-templ/topk.sh',
+				'--input_repo', input_repo,
+				'--output_file', self._output_dir+'/topk.json',
+				'--number_of_tops', self._ntops])
+		subprocess.call(['pachctl', 'create-pipeline', '-f', self._output_dir+'/topk.json'])
+		subprocess.call(['bash', dir_path+'/bash-templ/monitor.sh',
+				'--pipeline_name', self._topk_pipeline,
+				'--wait_span', '100'])
+	
 	def upload_to_quilt(self, final_pipeline):
 		p = subprocess.Popen('pachctl list-commit '+final_pipeline+' |tail -1 |awk \'{print $2}\'', stdout=subprocess.PIPE, shell=True)
 		(outputid, err) = p.communicate()
@@ -137,21 +186,32 @@ class Compute(object):
 		p.communicate()
 		f = connection.upload('merge_'+self._input_repo)
 		subprocess.call(['rm','-f','merge_'+self._input_repo])
+#		connection.create_table(name='merge_'+self._input_repo, inputfile=f)
 		return f
 
 	def run_calc(self,connection):
 		self.commit_to_pachy(connection)
-		self.gen_docker_image()
-		if( self._pachy_version<'1.2.1' ):
-			self.gen_pipeline_split()
-			if( self._mrmethod=='simple_map' ):
-				self.gen_pipeline_map(self._split_pipeline)
-				self.gen_pipeline_merge(self._proc_pipeline)
-				self.upload_to_quilt(self._merge_pipeline)
-		else:
-			if( self._mrmethod=='simple_map' ):
-				self.gen_pipeline_map(self._input_pipeline)
-				self.upload_to_quilt(self._proc_pipeline)
+###########################################
+#		Temporiarily apply split-merge bug fix to all version, insuring the desired parallelism is reached
+###########################################
+#		if( self._pachy_version<'1.2.1' ):
+		self.gen_pipeline_split()
+		if( self._mrmethod=='simple_map' ):
+			self.gen_docker_image()
+			self.gen_pipeline_map(self._split_pipeline)
+			self.gen_pipeline_merge(self._proc_pipeline)
+			self.upload_to_quilt(self._merge_pipeline)
+		elif( self._mrmethod=='count' ):
+			self.gen_pipeline_count(self._split_pipeline)
+			self.upload_to_quilt(self._count_pipeline)
+		elif( self._mrmethod=='topk' ):
+			self.gen_pipeline_count(self._split_pipeline)
+			self.gen_pipeline_topk(self._count_pipeline)
+			self.upload_to_quilt(self._topk_pipeline)
+#		else:
+#			if( self._mrmethod=='simple_map' ):
+#				self.gen_pipeline_map(self._input_pipeline)
+#				self.upload_to_quilt(self._proc_pipeline)
 
 ####################################################################
 # The below is for local testing, please remove them when incooperating into Quilt
@@ -165,15 +225,15 @@ def get_parser():
 		help='The file output directory')
 	parser.add_argument('--req_file',
 		type=str,
-		required=True,
+		default='',
 		help='The requirements.txt file for `pip install -r`')
 	parser.add_argument('--tar_ball',
 		type=str,
-		required=True,
+		default='',
 		help='The tar ball file containing the executable and the dependent files')
 	parser.add_argument('--script_name',
 		type=str,
-		required=True,
+		default='',
 		help='The name of the executable')
 	parser.add_argument('--table_number',
 		type=int,
@@ -200,13 +260,18 @@ def get_parser():
 if __name__ == '__main__':
 	args = get_parser().parse_args()
 	connection = quilt.Connection(args.user_name)
+#	compute = Compute( output_dir=args.output_dir,
+#			tar_ball=args.tar_ball,
+#			script_name=args.script_name,
+#			table_number=args.table_number,
+#			docker_user=args.docker_user,
+#			docker_image=args.docker_image,
+#			parallelism=args.parallelism,
+#			mrmethod='simple_map',
+#			req_file=args.req_file)
+#	compute.run_calc(connection)
 	compute = Compute( output_dir=args.output_dir,
-			tar_ball=args.tar_ball,
-			script_name=args.script_name,
 			table_number=args.table_number,
-			docker_user=args.docker_user,
-			docker_image=args.docker_image,
 			parallelism=args.parallelism,
-			mrmethod='simple_map',
-			req_file=args.req_file)
+			mrmethod='count')
 	compute.run_calc(connection)
