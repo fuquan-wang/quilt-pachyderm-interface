@@ -38,4 +38,4 @@ fi
 cat /pfs/$_INPUT_REPO/* > tmpInput;
 python quilt-topK.py --input_file tmpInput --output_file tmpOutput --number_of_tops $_TOPS
 
-mv tmpOutpt /pfs/out/data
+mv tmpOutput /pfs/out/data

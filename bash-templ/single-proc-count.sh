@@ -71,4 +71,4 @@ else
 	python quilt-count.py --input_file tmpInput --output_file tmpOutput --column_number 0 --score_column 1 --integer_score 0
 fi
 
-mv tmpOutpt /pfs/out/`uuidgen`
+mv tmpOutput /pfs/out/`uuidgen`

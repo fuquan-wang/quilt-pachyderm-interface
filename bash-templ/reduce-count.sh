@@ -35,6 +35,6 @@ if [ -z "$_INPUT_REPO" ]; then
 fi
 
 cat /pfs/$_INPUT_REPO/* > tmpInput;
-python quilt-count.py --input_file tmpInput --output_file tmpOutput --column_number 0 --score_column 1 --integer_score $INTEGER 
+python quilt-count.py --input_file tmpInput --output_file tmpOutput --column_number 0 --score_column 1 --integer_score $_INTEGER 
 
-mv tmpOutpt /pfs/out/data
+mv tmpOutput /pfs/out/data
