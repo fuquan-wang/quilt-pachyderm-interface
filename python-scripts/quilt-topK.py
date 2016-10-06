@@ -25,19 +25,24 @@ if __name__ == '__main__':
 
 	k = args.number_of_tops
 
-	mylist = []
+	mylist = [None] * k
 	for row in reader:
 		inserted = False
 		for idx in range(len(mylist)):
+			if mylist[idx] is None:
+				mylist.insert( idx, (float(row[1]),row[0]) )
+				inserted = True
+				break
 			if mylist[idx][0]<float(row[1]):
 				mylist.insert( idx, (float(row[1]),row[0]) )
 				inserted = True
-		if len(mylist)<k and inserted==False:
-			mylist.append( (float(row[1]),row[0]) )
-		elif inserted==True:
+				break
+		if len(mylist)>k:
 			mylist = mylist[:-1]
 
 	ofile = open(args.output_file, 'wb')
 	for item in mylist:
-		ofile.write(item[1]+'\n')
+		if item is not None:
+			ofile.write(item[1]+'\n')
 	ofile.close()
+

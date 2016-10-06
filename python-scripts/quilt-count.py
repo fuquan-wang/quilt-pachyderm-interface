@@ -50,7 +50,7 @@ if __name__ == '__main__':
 		score = 1.
 		if args.score_column>=0:
 			if args.integer_score==1:
-				score = int(row[args.score_column])
+				score = int(float(row[args.score_column]))
 			else:
 				score = float(row[args.score_column])
 		if args.to_lower==1:
