@@ -64,7 +64,7 @@ Starting from the base image, we will add the following elements to make it the 
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-The data pipeline in Pachyderm can implement MapReduce pattern as in Hadoop ecosystem via JSON manifest. Currently the simple mapping pipeline is automatically generated as it is most common and takes most of the time for multiple processings. The counting MapReduce pattern is also supported with or without a column as counting weight, and the top K MapReduce pattern can be achieved based on the counting results. The other common MapReduce patterns will also be added soon, including sorting, shuffling and table joining.
+The data pipeline in Pachyderm can implement MapReduce pattern as in Hadoop ecosystem via JSON manifest. Currently the simple mapping pipeline is automatically generated as it is most common and takes most of the time for multiple processings. The counting MapReduce pattern is also supported with or without a column as counting weight, and the top K MapReduce pattern can be achieved based on the counting results. The other common MapReduce patterns will also be added soon, including sorting, shuffling and table joining.  
 The Pachyderm JSON manifest will be automatically generated, specifying input repository, the processing commands, parallelism and output name. There were bugs in Pachyderm (v1.2.0-RC2) for sheduling parallel jobs during the project development, including
 - File partition is not working but said to be fixed in v1.2.1
 - Block partition is splitting the files into very uneven pieces
