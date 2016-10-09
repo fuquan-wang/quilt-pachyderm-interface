@@ -64,7 +64,7 @@ Starting from the base image, we will add the following elements to make it the 
 
 [Back to Table of Contents] (README.md#table-of-contents)
 
-The data pipeline in Pachyderm can implement MapReduce pattern as in Hadoop ecosystem via JSON manifest. Currently the simple mapping pipeline is automatically generated as it is most common and takes most of the time for multiple processings. The other common MapReduce patterns will also be added, including top K, counting, sorting and table joining.
+The data pipeline in Pachyderm can implement MapReduce pattern as in Hadoop ecosystem via JSON manifest. Currently the simple mapping pipeline is automatically generated as it is most common and takes most of the time for multiple processings. The counting MapReduce pattern is also supported with or without a column as counting weight, and the top K MapReduce pattern can be achieved based on the counting results. The other common MapReduce patterns will also be added soon, including sorting, shuffling and table joining.
 The Pachyderm JSON manifest will be automatically generated, specifying input repository, the processing commands, parallelism and output name. There were bugs in Pachyderm (v1.2.0-RC2) for sheduling parallel jobs during the project development, including
 - File partition is not working but said to be fixed in v1.2.1
 - Block partition is splitting the files into very uneven pieces
@@ -104,4 +104,7 @@ compute.do_calc()
 [Back to Table of Contents] (README.md#table-of-contents)
 
 This work is done in a time span of 3 weeks while I was a Data Engineering Fellow at the Insight Data Science Program. A significant portion of my time was spent on learning the new tools and fighting against bugs in Pachyderm (v1.2.0-RC1 and v1.2.0-RC2). However, this project is beneficial for all analysts/data scientists by minimizing their time to provision or manage clusters, so I plan to continue to polish this project. The following features are being considered:
+- More MapReduce patterns
+- Suggest MapReduce patterns automatically based on use case
+- Include the support for Java and Node.js
 
