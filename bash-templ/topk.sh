@@ -48,8 +48,8 @@ cat << EOF
 	"transform": {
 		"cmd": [ "sh" ],
 		"stdin": [
-					"/reduce-topK.sh --input_repo $_INPUT_REPO --number_of_tops $_TOPS"
-				 ],
+			"/reduce-topK.sh --input_repo $_INPUT_REPO --number_of_tops $_TOPS"
+		 ],
 		"image": "fuquanwang/count-and-topk:latest"
 	},
 	"parallelism_spec": {

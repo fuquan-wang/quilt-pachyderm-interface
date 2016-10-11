@@ -66,19 +66,20 @@ EOF
 ) >> $_OUTPUT_FILE
 if [ -z "$_SCORE" ]; then
 	if [ "$_LOWER" == "0" ]; then
-		echo -e "\t\t\t/single-proc-count.sh --input_repo $_INPUT_REPO --column_number $_COLUMN" >> $_OUTPUT_FILE;
+		echo -e "\t\t\t\"/single-proc-count.sh --input_repo $_INPUT_REPO --column_number $_COLUMN\"" >> $_OUTPUT_FILE;
 	else
-		echo -e "\t\t\t/single-proc-count.sh --input_repo $_INPUT_REPO --column_number $_COLUMN --to_lower" >> $_OUTPUT_FILE;
+		echo -e "\t\t\t\"/single-proc-count.sh --input_repo $_INPUT_REPO --column_number $_COLUMN --to_lower\"" >> $_OUTPUT_FILE;
 	fi
+else
 	if [ "$_LOWER" == "0" ]; then
-		echo -e "\t\t\t/single-proc-count.sh --input_repo $_INPUT_REPO --column_number $_COLUMN --score_column $_SCORE" >> $_OUTPUT_FILE;
+		echo -e "\t\t\t\"/single-proc-count.sh --input_repo $_INPUT_REPO --column_number $_COLUMN --score_column $_SCORE\"" >> $_OUTPUT_FILE;
 	else
-		echo -e "\t\t\t/single-proc-count.sh --input_repo $_INPUT_REPO --column_number $_COLUMN --to_lower --score_column $_SCORE" >> $_OUTPUT_FILE;
+		echo -e "\t\t\t\"/single-proc-count.sh --input_repo $_INPUT_REPO --column_number $_COLUMN --to_lower --score_column $_SCORE\"" >> $_OUTPUT_FILE;
 	fi
 fi
 (
 cat << EOF
-				 ],
+		 ],
 		"image": "fuquanwang/count-and-topk:latest"
 	},
 	"parallelism_spec": {
@@ -103,13 +104,13 @@ cat << EOF
 EOF
 ) >> $_OUTPUT_FILE
 if [ "$_ISINTEGER" == "0" ]; then
-	echo -e "\t\t\t/reduce-count.sh --input_repo COUNT_STEP1_$_INPUT_REPO" >> $_OUTPUT_FILE;
+	echo -e "\t\t\t\"/reduce-count.sh --input_repo COUNT_STEP1_$_INPUT_REPO\"" >> $_OUTPUT_FILE;
 else
-	echo -e "\t\t\t/reduce-count.sh --input_repo COUNT_STEP1_$_INPUT_REPO --integer_score" >> $_OUTPUT_FILE;
+	echo -e "\t\t\t\"/reduce-count.sh --input_repo COUNT_STEP1_$_INPUT_REPO --integer_score\"" >> $_OUTPUT_FILE;
 fi
 (
 cat << EOF
-				 ],
+		 ],
 		"image": "fuquanwang/count-and-topk:latest"
 	},
 	"parallelism_spec": {
